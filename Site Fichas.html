@@ -1,0 +1,1745 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ficha - Meu RPG</title>
+
+  <style>
+    :root{
+      --bg:#06070b;
+      --panel:#0b0f18;
+      --panel2:#0a0d14;
+      --stroke:rgba(255,255,255,.10);
+      --stroke2:rgba(255,255,255,.16);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.62);
+
+      --accent:#7c3aed;
+      --accent2:#3b82f6;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+
+      --shadow: 0 16px 40px rgba(0,0,0,.45);
+      --r16: 16px;
+      --r12: 12px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+
+      background:
+        radial-gradient(900px 520px at 12% 0%, rgba(124,58,237,.22), transparent 60%),
+        radial-gradient(900px 520px at 88% 10%, rgba(59,130,246,.14), transparent 62%),
+        radial-gradient(900px 520px at 50% 100%, rgba(239,68,68,.08), transparent 62%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 1px, transparent 1px, transparent 6px),
+        var(--bg);
+    }
+
+    main{
+      padding:16px;
+      max-width:1400px;
+      margin:0 auto;
+    }
+
+    /* ===== GRID 3 COLUNAS ===== */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns:1fr; }
+    }
+
+    /* importante pra não “vazar” horizontal */
+    .col, .bloco, .linha2, .linha3, .tabelaWrap { min-width:0; }
+
+    /* ===== COLUNAS ===== */
+    .col{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      border: 1px solid var(--stroke);
+      border-radius: var(--r16);
+      padding: 12px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    /* ===== BLOCOS ===== */
+    .bloco{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02)),
+        rgba(9,12,20,.55);
+      border: 1px solid var(--stroke);
+      border-radius: var(--r12);
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    h2{
+      margin: 0 0 8px;
+      font-size: 11px;
+      letter-spacing: .9px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.86);
+    }
+
+    /* ===== CAMPOS ===== */
+    label{
+      display:block;
+      font-size:10px;
+      margin:4px 0 4px;
+      color: var(--muted);
+      letter-spacing:.2px;
+    }
+
+    input, select, textarea{
+      width:100%;
+      padding:8px;
+      border-radius: 12px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.28);
+      color: var(--text);
+      outline:none;
+      transition: .15s ease;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(255,255,255,.25);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.18);
+    }
+
+    textarea{ resize:vertical; min-height:84px; }
+
+    /* ===== LINHAS INTERNAS ===== */
+    .linha2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .linha3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 700px){
+      .linha2, .linha3{ grid-template-columns:1fr; }
+    }
+
+    /* ===== “LINHA ____” (Identidade + textos) ===== */
+    .linhaInput,
+    .linhaInputArea{
+      background: transparent !important;
+      border: none !important;
+      border-bottom: 2px solid rgba(255,255,255,.22) !important;
+      border-radius: 0 !important;
+      padding: 8px 2px !important;
+      box-shadow: none !important;
+    }
+    .linhaInput:focus,
+    .linhaInputArea:focus{
+      border-bottom-color: rgba(255,255,255,.55) !important;
+    }
+    #bloco-identidade .linhaInput{
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing:.2px;
+    }
+
+    /* ===== AVATAR GRANDE ===== */
+    .identHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .avatarGrandeBox{
+      position:relative;
+      width:140px;
+      height:190px;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.35);
+      box-shadow: 0 10px 30px rgba(0,0,0,.6);
+      flex: 0 0 auto;
+    }
+    .avatarGrande{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      transition:.3s;
+    }
+    .avatarOverlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      gap:6px;
+      padding:8px;
+      background: linear-gradient(to top, rgba(0,0,0,.75), transparent);
+      opacity:0;
+      transition:.25s;
+    }
+    .avatarGrandeBox:hover .avatarOverlay{ opacity:1; }
+
+    .avatarBtnBig{
+      text-align:center;
+      padding:7px;
+      font-size:11px;
+      font-weight:900;
+      border-radius:12px;
+      background: rgba(0,0,0,.60);
+      border:1px solid rgba(255,255,255,.25);
+      color:white;
+      cursor:pointer;
+      user-select:none;
+    }
+    .avatarBtnBig:hover{ background: rgba(124,58,237,.85); }
+    .avatarBtnBig.remove{
+      background: rgba(120,0,0,.60);
+      border-color: rgba(255,255,255,.20);
+    }
+    .avatarBtnBig.remove:hover{ background: rgba(200,0,0,.85); }
+    .avatarInput{ display:none; }
+
+    @media (max-width:700px){
+      .avatarGrandeBox{ width:110px; height:150px; }
+    }
+
+    /* ===== ATRIBUTOS (cards compactos) ===== */
+    .atributosGrid{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:8px;
+    }
+    @media (max-width: 900px){
+      .atributosGrid{ grid-template-columns: repeat(3, 1fr); }
+    }
+    .attrCard{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:8px;
+      background: rgba(255,255,255,.03);
+      text-align:center;
+    }
+    .attrSigla{
+      font-size:11px;
+      letter-spacing:1px;
+      opacity:.9;
+      font-weight:900;
+    }
+    .attrNome{
+      font-size:10px;
+      opacity:.65;
+      margin-top:2px;
+    }
+    .attrValor{
+      margin-top:6px;
+      text-align:center;
+      font-size:16px;
+      font-weight:900;
+      padding:10px 8px;
+      background: rgba(0,0,0,.30);
+      border-color: rgba(255,255,255,.16);
+    }
+
+    /* ===== BARRAS ===== */
+    .barra-box{ margin-top:10px; }
+    .barra-topo{
+      margin-bottom:6px;
+      font-size:12px;
+      color: rgba(255,255,255,.82);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+
+    .controles{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+      align-items:center;
+    }
+    .controles input{
+      padding:8px;
+      border-radius:12px;
+    }
+
+    .barra{
+      position:relative;
+      height:26px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.38);
+      overflow:hidden;
+      cursor:pointer;
+    }
+    .fill{
+      height:100%;
+      width:0%;
+      background: var(--fillColor, #22c55e);
+      transition: width .25s ease;
+    }
+    .texto{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:900;
+      color: rgba(255,255,255,.93);
+      text-shadow: 0 1px 12px rgba(0,0,0,.75);
+      pointer-events:none;
+      user-select:none;
+    }
+
+    /* piscar crítico (<= 20%) */
+    @keyframes piscarBarra{
+      0%{ filter:brightness(1); }
+      50%{ filter:brightness(2.0); }
+      100%{ filter:brightness(1); }
+    }
+    .critico{
+      animation: piscarBarra .85s infinite;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.12) inset, 0 0 18px rgba(255,255,255,.16);
+    }
+
+    /* ===== CONTROLES +/- (2 campos) ===== */
+    .deltaBox{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+    }
+    .deltaTag{
+      width:18px;
+      text-align:center;
+      font-weight:900;
+      opacity:.9;
+    }
+    .deltaBox input{
+      width:92px;
+      padding:8px;
+      border-radius:12px;
+    }
+
+    /* ===== RESULTADOS ===== */
+    .resultado{
+      background: rgba(0,0,0,.30);
+      border-color: rgba(255,255,255,.18);
+      font-weight:900;
+      text-align:center;
+    }
+
+    /* ===== TABELA ===== */
+    .tabelaWrap{
+      width:100%;
+      overflow-x:auto;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
+    }
+    .tabela{
+      width:100%;
+      border-collapse:collapse;
+      min-width:520px;
+    }
+    .tabela th, .tabela td{
+      padding:6px;
+      font-size:11px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      white-space: nowrap;
+    }
+    .tabela th{
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,.55);
+      text-transform: uppercase;
+      letter-spacing: .55px;
+      font-size:10px;
+      color: rgba(255,255,255,.86);
+      z-index: 1;
+    }
+    .tabela input, .tabela select{
+      padding:6px 7px;
+      border-radius:10px;
+      font-size:11px;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .totalBox{ font-weight:900; }
+
+    /* ===== CARDS (coluna 3) ===== */
+    .card{
+      border:1px solid var(--stroke);
+      border-radius:14px;
+      padding:8px;
+      display:grid;
+      gap:8px;
+      margin-bottom:8px;
+      background: rgba(0,0,0,.22);
+    }
+    .card .topo{
+      display:grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items:center;
+      gap:8px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      font-size:11px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.78);
+    }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    @media (max-width: 700px){ .grid2{ grid-template-columns: 1fr; } }
+
+    /* botões */
+    .addBtn{
+      width:100%;
+      padding:9px 10px;
+      border:0;
+      color:white;
+      font-weight:900;
+      border-radius:12px;
+      background: linear-gradient(90deg, rgba(124,58,237,.92), rgba(59,130,246,.78));
+      margin-bottom:8px;
+      cursor:pointer;
+    }
+    .addBtn:hover{ filter:brightness(1.08); }
+
+    .remBtn{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(239,68,68,.32);
+      background: rgba(239,68,68,.14);
+      color: var(--text);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .remBtn:hover{ background: rgba(239,68,68,.22); transform: translateY(-1px); }
+
+    .useBtn{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(34,197,94,.32);
+      background: rgba(34,197,94,.14);
+      color: var(--text);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .useBtn:hover{ background: rgba(34,197,94,.22); transform: translateY(-1px); }
+
+    /* ===== Mini imagem (Itens e Rituais) ===== */
+    .imgMiniWrap{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .imgMiniBox{
+      width:88px;
+      height:88px;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      flex: 0 0 auto;
+    }
+    .imgMiniBox img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .imgMiniBtns{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .imgMiniInput{ display:none; }
+
+    .miniLinkBtn{
+      display:inline-block;
+      text-align:center;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      font-weight:900;
+      font-size:11px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .miniLinkBtn:hover{ background: rgba(255,255,255,.10); }
+
+    .miniLinkBtn.rem{
+      border-color: rgba(239,68,68,.32);
+      background: rgba(239,68,68,.14);
+    }
+    .miniLinkBtn.rem:hover{ background: rgba(239,68,68,.22); }
+
+    /* ===== CORES DO ELEMENTO DO RITUAL (select) ===== */
+    .ritElem{ font-weight:900; }
+    .rit-elem-carnal{ background: rgba(140,0,0,.35) !important; border: 1px solid rgba(255,0,0,.35) !important; }
+    .rit-elem-eco{ background: rgba(210,210,210,.16) !important; border: 1px solid rgba(255,255,255,.22) !important; }
+    .rit-elem-ruptura{ background: rgba(25,0,45,.45) !important; border: 1px solid rgba(140,90,255,.22) !important; }
+    .rit-elem-existencia{ background: rgba(0,70,140,.35) !important; border: 1px solid rgba(80,180,255,.30) !important; }
+
+    /* scrollbar */
+    *::-webkit-scrollbar{ height:10px; width:10px; }
+    *::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius:999px; }
+    *::-webkit-scrollbar-track{ background: rgba(0,0,0,.20); }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="grid">
+
+      <!-- ========================= COLUNA 1 ========================= -->
+      <section class="col" id="coluna1">
+
+        <!-- IDENTIDADE + AVATAR -->
+        <div class="bloco" id="bloco-identidade">
+          <div class="identHead">
+            <div style="flex:1">
+              <h2>Identidade</h2>
+            </div>
+
+            <div class="avatarGrandeBox">
+              <img id="avatarPreview" class="avatarGrande" alt="Avatar">
+
+              <div class="avatarOverlay">
+                <label for="avatarInput" class="avatarBtnBig">Trocar</label>
+                <button type="button" class="avatarBtnBig remove" id="avatarRemoveBtn">Remover</button>
+              </div>
+
+              <input id="avatarInput" type="file" accept="image/*" class="avatarInput">
+            </div>
+          </div>
+
+          <div class="linha2">
+            <div>
+              <label for="personagem">Personagem</label>
+              <input id="personagem" class="linhaInput" type="text" />
+            </div>
+            <div>
+              <label for="player">Player</label>
+              <input id="player" class="linhaInput" type="text" />
+            </div>
+            <div>
+              <label for="conceito">Conceito</label>
+              <input id="conceito" class="linhaInput" type="text" />
+            </div>
+            <div>
+              <label for="classe">Classe</label>
+              <input id="classe" class="linhaInput" type="text" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ATRIBUTOS -->
+        <div class="bloco" id="bloco-atributos">
+          <h2>Atributos</h2>
+
+          <div class="atributosGrid">
+            <div class="attrCard">
+              <div class="attrSigla">DES</div>
+              <div class="attrNome">Destreza</div>
+              <input id="destreza" class="attrValor" type="number" value="0" min="0">
+            </div>
+
+            <div class="attrCard">
+              <div class="attrSigla">ESS</div>
+              <div class="attrNome">Essência</div>
+              <input id="essencia" class="attrValor" type="number" value="0" min="0">
+            </div>
+
+            <div class="attrCard">
+              <div class="attrSigla">FOR</div>
+              <div class="attrNome">Força</div>
+              <input id="forca" class="attrValor" type="number" value="0" min="0">
+            </div>
+
+            <div class="attrCard">
+              <div class="attrSigla">INT</div>
+              <div class="attrNome">Intelecto</div>
+              <input id="intelecto" class="attrValor" type="number" value="0" min="0">
+            </div>
+
+            <div class="attrCard">
+              <div class="attrSigla">VIG</div>
+              <div class="attrNome">Vigor</div>
+              <input id="vigor" class="attrValor" type="number" value="0" min="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- NUX & LUX -->
+        <div class="bloco" id="bloco-nuxlux">
+          <h2>NUX & LUX</h2>
+          <div class="linha2">
+            <div>
+              <label for="nux">NUX (%)</label>
+              <select id="nux"></select>
+            </div>
+            <div>
+              <label for="lux">LUX</label>
+              <select id="lux"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECURSOS -->
+        <div class="bloco" id="bloco-recursos">
+          <h2>Recursos</h2>
+
+          <!-- VIDA -->
+          <div class="barra-box">
+            <div class="barra-topo">Vida</div>
+
+            <div class="controles">
+              <div class="deltaBox">
+                <span class="deltaTag">-</span>
+                <input id="vidaMenos" type="number" min="0" placeholder="Dano">
+              </div>
+
+              <div class="deltaBox">
+                <span class="deltaTag">+</span>
+                <input id="vidaMais" type="number" min="0" placeholder="Cura">
+              </div>
+
+              <input id="vidaMax" type="number" value="20" min="0" title="Máximo">
+            </div>
+
+            <div class="barra" onclick="editar('vida')">
+              <div class="fill" id="vidaFill" style="--fillColor:#ef4444;"></div>
+              <div class="texto" id="vidaTxt">20 / 20</div>
+            </div>
+          </div>
+
+          <!-- SANIDADE -->
+          <div class="barra-box">
+            <div class="barra-topo">Sanidade</div>
+
+            <div class="controles">
+              <div class="deltaBox">
+                <span class="deltaTag">-</span>
+                <input id="sanidadeMenos" type="number" min="0" placeholder="Perda">
+              </div>
+
+              <div class="deltaBox">
+                <span class="deltaTag">+</span>
+                <input id="sanidadeMais" type="number" min="0" placeholder="Recupera">
+              </div>
+
+              <input id="sanidadeMax" type="number" value="10" min="0" title="Máximo">
+            </div>
+
+            <div class="barra" onclick="editar('sanidade')">
+              <div class="fill" id="sanidadeFill" style="--fillColor:#3b82f6;"></div>
+              <div class="texto" id="sanidadeTxt">10 / 10</div>
+            </div>
+          </div>
+
+          <!-- ESFORÇO MENTAL -->
+          <div class="barra-box">
+            <div class="barra-topo">Esforço Mental</div>
+
+            <div class="controles">
+              <div class="deltaBox">
+                <span class="deltaTag">-</span>
+                <input id="esforcoMenos" type="number" min="0" placeholder="Gasto">
+              </div>
+
+              <div class="deltaBox">
+                <span class="deltaTag">+</span>
+                <input id="esforcoMais" type="number" min="0" placeholder="Recupera">
+              </div>
+
+              <input id="esforcoMax" type="number" value="10" min="0" title="Máximo">
+            </div>
+
+            <div class="barra" onclick="editar('esforco')">
+              <div class="fill" id="esforcoFill" style="--fillColor:#7c3aed;"></div>
+              <div class="texto" id="esforcoTxt">10 / 10</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEFESAS -->
+        <div class="bloco" id="bloco-defesas">
+          <h2>Defesa / Bloqueio / Esquiva</h2>
+
+          <div class="linha2">
+            <div>
+              <label for="bonusDefesa">Bônus Defesa (equip/outros)</label>
+              <input id="bonusDefesa" type="number" value="0">
+            </div>
+            <div>
+              <label for="bonusEsquiva">Bônus Esquiva (equip/outros)</label>
+              <input id="bonusEsquiva" type="number" value="0">
+            </div>
+          </div>
+
+          <div class="linha3" style="margin-top:10px;">
+            <div>
+              <label for="defesaFinal">Defesa</label>
+              <input id="defesaFinal" class="resultado" type="number" value="10" readonly>
+            </div>
+            <div>
+              <label for="bloqueioFinal">Bloqueio</label>
+              <input id="bloqueioFinal" class="resultado" type="number" value="0" readonly>
+            </div>
+            <div>
+              <label for="esquivaFinal">Esquiva</label>
+              <input id="esquivaFinal" class="resultado" type="number" value="10" readonly>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEXTOS -->
+        <div class="bloco" id="bloco-protecao">
+          <h2>Proteções</h2>
+          <textarea id="protecoes" class="linhaInputArea" rows="3"></textarea>
+        </div>
+
+        <div class="bloco" id="bloco-resistencias">
+          <h2>Resistências</h2>
+          <textarea id="resistencias" class="linhaInputArea" rows="3"></textarea>
+        </div>
+
+        <div class="bloco" id="bloco-proficiencias">
+          <h2>Proficiências</h2>
+          <textarea id="proficiencias" class="linhaInputArea" rows="3"></textarea>
+        </div>
+
+      </section>
+
+      <!-- ========================= COLUNA 2 ========================= -->
+      <section class="col" id="coluna2">
+        <div class="bloco" id="bloco-pericias">
+          <h2>Perícias</h2>
+
+          <div class="tabelaWrap">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>Perícia</th>
+                  <th>Base</th>
+                  <th>Attr</th>
+                  <th>Treino</th>
+                  <th>Bônus</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="periciasBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= COLUNA 3 ========================= -->
+      <section class="col" id="coluna3">
+
+        <div class="bloco" id="bloco-habilidades">
+          <h2>Habilidades</h2>
+          <button class="addBtn" type="button" onclick="addHabilidade()">+ Adicionar habilidade</button>
+          <div id="habilidadesLista"></div>
+        </div>
+
+        <div class="bloco" id="bloco-itens">
+          <h2>Itens</h2>
+          <button class="addBtn" type="button" onclick="addItem()">+ Adicionar item</button>
+          <div id="itensLista"></div>
+        </div>
+
+        <div class="bloco" id="bloco-rituais">
+          <h2>Rituais</h2>
+          <button class="addBtn" type="button" onclick="addRitual()">+ Adicionar ritual</button>
+          <div id="rituaisLista"></div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // ================== LOCAL STORAGE (NOVO) ==================
+    const LS_KEY = "ficha_meu_rpg_v1";
+
+    function safeParse(json, fallback){
+      try{ return JSON.parse(json); }catch{ return fallback; }
+    }
+
+    function loadState(){
+      const raw = localStorage.getItem(LS_KEY);
+      return raw ? safeParse(raw, null) : null;
+    }
+
+    function saveState(){
+      // monta snapshot do estado atual da ficha
+      const snap = {
+        identidade: {
+          personagem: document.getElementById("personagem").value || "",
+          player: document.getElementById("player").value || "",
+          conceito: document.getElementById("conceito").value || "",
+          classe: document.getElementById("classe").value || "",
+          avatar: document.getElementById("avatarPreview").src || ""
+        },
+        atributos: {
+          destreza: Number(document.getElementById("destreza").value || 0),
+          essencia: Number(document.getElementById("essencia").value || 0),
+          forca: Number(document.getElementById("forca").value || 0),
+          intelecto: Number(document.getElementById("intelecto").value || 0),
+          vigor: Number(document.getElementById("vigor").value || 0),
+        },
+        nuxlux: {
+          nux: document.getElementById("nux").value || "",
+          lux: document.getElementById("lux").value || ""
+        },
+        recursos: {
+          estado: { ...estado },
+          max: {
+            vida: Number(document.getElementById("vidaMax").value || 0),
+            sanidade: Number(document.getElementById("sanidadeMax").value || 0),
+            esforco: Number(document.getElementById("esforcoMax").value || 0)
+          }
+        },
+        defesas: {
+          bonusDefesa: Number(document.getElementById("bonusDefesa").value || 0),
+          bonusEsquiva: Number(document.getElementById("bonusEsquiva").value || 0)
+        },
+        textos: {
+          protecoes: document.getElementById("protecoes").value || "",
+          resistencias: document.getElementById("resistencias").value || "",
+          proficiencias: document.getElementById("proficiencias").value || ""
+        },
+        pericias: getPericiasState(),
+        cards: {
+          habilidades: getHabilidadesState(),
+          itens: getItensState(),
+          rituais: getRituaisState()
+        }
+      };
+
+      try{
+        localStorage.setItem(LS_KEY, JSON.stringify(snap));
+      }catch(err){
+        console.warn("Falha ao salvar no LocalStorage (provável limite de tamanho).", err);
+        // opcional: alert simples
+        // alert("Não foi possível salvar: o armazenamento do navegador pode estar cheio (imagens grandes).");
+      }
+    }
+
+    function applyState(snap){
+      if(!snap) return;
+
+      // identidade + avatar
+      if(snap.identidade){
+        document.getElementById("personagem").value = snap.identidade.personagem ?? "";
+        document.getElementById("player").value = snap.identidade.player ?? "";
+        document.getElementById("conceito").value = snap.identidade.conceito ?? "";
+        document.getElementById("classe").value = snap.identidade.classe ?? "";
+        if(typeof snap.identidade.avatar === "string" && snap.identidade.avatar){
+          document.getElementById("avatarPreview").src = snap.identidade.avatar;
+        }
+      }
+
+      // atributos
+      if(snap.atributos){
+        document.getElementById("destreza").value = snap.atributos.destreza ?? 0;
+        document.getElementById("essencia").value = snap.atributos.essencia ?? 0;
+        document.getElementById("forca").value = snap.atributos.forca ?? 0;
+        document.getElementById("intelecto").value = snap.atributos.intelecto ?? 0;
+        document.getElementById("vigor").value = snap.atributos.vigor ?? 0;
+      }
+
+      // nux/lux (após options existirem)
+      if(snap.nuxlux){
+        if(snap.nuxlux.nux) document.getElementById("nux").value = snap.nuxlux.nux;
+        if(snap.nuxlux.lux) document.getElementById("lux").value = snap.nuxlux.lux;
+      }
+
+      // recursos
+      if(snap.recursos?.max){
+        document.getElementById("vidaMax").value = snap.recursos.max.vida ?? 20;
+        document.getElementById("sanidadeMax").value = snap.recursos.max.sanidade ?? 10;
+        document.getElementById("esforcoMax").value = snap.recursos.max.esforco ?? 10;
+      }
+      if(snap.recursos?.estado){
+        estado.vida = Number(snap.recursos.estado.vida ?? estado.vida);
+        estado.sanidade = Number(snap.recursos.estado.sanidade ?? estado.sanidade);
+        estado.esforco = Number(snap.recursos.estado.esforco ?? estado.esforco);
+      }
+
+      // defesas bônus
+      if(snap.defesas){
+        document.getElementById("bonusDefesa").value = snap.defesas.bonusDefesa ?? 0;
+        document.getElementById("bonusEsquiva").value = snap.defesas.bonusEsquiva ?? 0;
+      }
+
+      // textos
+      if(snap.textos){
+        document.getElementById("protecoes").value = snap.textos.protecoes ?? "";
+        document.getElementById("resistencias").value = snap.textos.resistencias ?? "";
+        document.getElementById("proficiencias").value = snap.textos.proficiencias ?? "";
+      }
+
+      // perícias (precisa da tabela montada)
+      if(snap.pericias){
+        setPericiasState(snap.pericias);
+      }
+
+      // cards (precisa das funções addX)
+      if(snap.cards?.habilidades?.length){
+        snap.cards.habilidades.forEach(h => addHabilidade(h));
+      }
+      if(snap.cards?.itens?.length){
+        snap.cards.itens.forEach(i => addItem(i));
+      }
+      if(snap.cards?.rituais?.length){
+        snap.cards.rituais.forEach(r => addRitual(r));
+      }
+    }
+
+    // salva com debounce pra não “martelar” o LS
+    let __saveT = null;
+    function scheduleSave(){
+      clearTimeout(__saveT);
+      __saveT = setTimeout(saveState, 250);
+    }
+
+    function listenAutoSave(){
+      // inputs gerais (menos os dos cards que são dinâmicos)
+      const ids = [
+        "personagem","player","conceito","classe",
+        "destreza","essencia","forca","intelecto","vigor",
+        "nux","lux",
+        "vidaMax","sanidadeMax","esforcoMax",
+        "bonusDefesa","bonusEsquiva",
+        "protecoes","resistencias","proficiencias"
+      ];
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener("input", scheduleSave);
+        el.addEventListener("change", scheduleSave);
+      });
+
+      // salvar quando valores das barras mudam (mudar/editar) — chamaremos scheduleSave dentro delas
+
+      // salvar também quando mexe em perícias (treino/bônus) — já chamamos atualizarTudo; aqui anexamos também
+      // (feito no montarTabelaPericias e nos listeners de atributos/bônus)
+    }
+
+    // ================== NUX / LUX ==================
+    (function preencherNuxLux(){
+      const nux = document.getElementById("nux");
+      const lux = document.getElementById("lux");
+
+      // NUX: 5 em 5 até 95 + 99
+      for(let i=5; i<=95; i+=5){
+        const op = document.createElement("option");
+        op.value = String(i);
+        op.textContent = i + "%";
+        if(i===35) op.selected = true;
+        nux.appendChild(op);
+      }
+      const op99 = document.createElement("option");
+      op99.value = "99";
+      op99.textContent = "99%";
+      nux.appendChild(op99);
+
+      // LUX: 1 a 10
+      for(let i=1;i<=10;i++){
+        const op = document.createElement("option");
+        op.value = String(i);
+        op.textContent = String(i);
+        if(i===5) op.selected = true;
+        lux.appendChild(op);
+      }
+    })();
+
+    // ================== AVATAR (agora salva no LS) ==================
+    (function avatarSetup(){
+      const input = document.getElementById("avatarInput");
+      const img = document.getElementById("avatarPreview");
+      const btnRemove = document.getElementById("avatarRemoveBtn");
+
+      const placeholder =
+        "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="220" height="300">
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="rgba(124,58,237,0.25)"/>
+                <stop offset="1" stop-color="rgba(59,130,246,0.18)"/>
+              </linearGradient>
+            </defs>
+            <rect width="100%" height="100%" rx="22" ry="22" fill="url(#g)"/>
+            <circle cx="110" cy="110" r="44" fill="rgba(255,255,255,0.20)"/>
+            <rect x="46" y="172" width="128" height="60" rx="30" fill="rgba(255,255,255,0.14)"/>
+            <text x="110" y="270" text-anchor="middle" font-family="Arial" font-size="16" fill="rgba(255,255,255,0.65)">
+              IMAGEM
+            </text>
+          </svg>
+        `);
+
+      function setAvatar(src){
+        img.src = src || placeholder;
+      }
+      setAvatar("");
+
+      input.addEventListener("change", () => {
+        const file = input.files && input.files[0];
+        if(!file) return;
+        if(!file.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          setAvatar(String(reader.result || ""));
+          input.value = "";
+          scheduleSave();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnRemove.addEventListener("click", () => {
+        setAvatar("");
+        input.value = "";
+        scheduleSave();
+      });
+    })();
+
+    // ================== BARRAS ==================
+    const estado = { vida: 20, sanidade: 10, esforco: 10 };
+
+    function renderBarra(id){
+      const max = Number(document.getElementById(id+"Max").value || 0);
+
+      // nunca negativo
+      estado[id] = Math.max(0, Number(estado[id] ?? 0));
+      const atual = estado[id];
+
+      let pct = max <= 0 ? 0 : (atual/max)*100;
+      pct = Math.min(pct, 100);
+
+      const fill = document.getElementById(id+"Fill");
+      fill.style.width = pct + "%";
+
+      document.getElementById(id+"Txt").textContent = `${atual} / ${max}`;
+
+      fill.classList.remove("critico");
+      if (max > 0 && atual > 0 && (atual / max) <= 0.2) fill.classList.add("critico");
+    }
+
+    function mudar(id, valor){
+      estado[id] = (estado[id] ?? 0) + valor;
+      if(estado[id] < 0) estado[id] = 0;
+      renderBarra(id);
+      scheduleSave();
+    }
+
+    function editar(id){
+      const atual = Number(estado[id] ?? 0);
+      const val = prompt("Novo valor:", String(atual));
+      if (val === null) return;
+      const n = Number(val);
+      if (Number.isNaN(n)) return;
+      estado[id] = n;
+      if(estado[id] < 0) estado[id] = 0;
+      renderBarra(id);
+      scheduleSave();
+    }
+
+    ["vida","sanidade","esforco"].forEach(id=>{
+      document.getElementById(id+"Max").addEventListener("input", ()=>{
+        renderBarra(id);
+        scheduleSave();
+      });
+    });
+
+    renderBarra("vida");
+    renderBarra("sanidade");
+    renderBarra("esforco");
+
+    // ====== 2 CAMPOS (DIMINUI / AUMENTA) ======
+    function bindDelta(resource){
+      const menos = document.getElementById(resource + "Menos");
+      const mais  = document.getElementById(resource + "Mais");
+
+      function aplicar(el, sinal){
+        if(!el) return;
+        const v = Number(el.value);
+        if(!Number.isFinite(v) || v <= 0) return;
+        mudar(resource, sinal * v);
+        el.value = "";
+      }
+
+      function bindEl(el, sinal){
+        if(!el) return;
+        el.addEventListener("keydown", (e)=>{
+          if(e.key === "Enter"){
+            e.preventDefault();
+            aplicar(el, sinal);
+          }
+        });
+        el.addEventListener("blur", ()=> aplicar(el, sinal));
+      }
+
+      bindEl(menos, -1);
+      bindEl(mais, +1);
+    }
+
+    bindDelta("vida");
+    bindDelta("sanidade");
+    bindDelta("esforco");
+
+    // ================== PERÍCIAS + DEFESAS ==================
+    const PERICIAS = [
+      { nome:"Acrobacia", base:"DES" },
+      { nome:"Adestramento", base:"ESS" },
+      { nome:"Artes", base:"ESS" },
+      { nome:"Atletismos", base:"FOR" },
+      { nome:"Charme", base:"ESS" },
+      { nome:"Ciências", base:"INT" },
+      { nome:"Conhecimentos Gerais", base:"INT" },
+      { nome:"Crime", base:"DES" },
+      { nome:"Enganação", base:"ESS" },
+      { nome:"Fortitude", base:"VIG" },
+      { nome:"Furtividade", base:"DES" },
+      { nome:"Iniciativa", base:"DES" },
+      { nome:"Instinto", base:"ESS" },
+      { nome:"Intimidação", base:"ESS" },
+      { nome:"Investigação", base:"INT" },
+      { nome:"Luta", base:"FOR" },
+      { nome:"Medicina", base:"INT" },
+      { nome:"Persuasão", base:"ESS" },
+      { nome:"Pilotagem", base:"DES" },
+      { nome:"Pontaria", base:"DES" },
+      { nome:"Profissão", base:"INT" },
+      { nome:"Reflexo", base:"DES" },
+      { nome:"Saber Oculto", base:"INT" },
+      { nome:"Sobrevivência", base:"INT" },
+      { nome:"Tática", base:"INT" },
+      { nome:"Tecnologia", base:"INT" },
+      { nome:"Vontade", base:"ESS" },
+    ];
+
+    const BASE_TO_ID = { DES:"destreza", ESS:"essencia", FOR:"forca", INT:"intelecto", VIG:"vigor" };
+
+    function numFrom(id){
+      const el = document.getElementById(id);
+      if(!el) return 0;
+      const v = Number(el.value);
+      return Number.isNaN(v) ? 0 : v;
+    }
+    function attrValor(sigla){ return numFrom(BASE_TO_ID[sigla]); }
+    function keyOf(nome){
+      return nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"_");
+    }
+
+    function montarTabelaPericias(){
+      const body = document.getElementById("periciasBody");
+      body.innerHTML = "";
+
+      PERICIAS.forEach(p => {
+        const key = keyOf(p.nome);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.nome}</td>
+          <td>${p.base}</td>
+          <td><span id="attr_${key}">0</span></td>
+          <td>
+            <select id="treino_${key}">
+              <option value="0">0</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+            </select>
+          </td>
+          <td><input id="bonus_${key}" type="number" value="0"></td>
+          <td class="totalBox"><span id="total_${key}">0</span></td>
+        `;
+        body.appendChild(tr);
+
+        document.getElementById(`treino_${key}`).addEventListener("input", ()=>{ atualizarTudo(); scheduleSave(); });
+        document.getElementById(`bonus_${key}`).addEventListener("input", ()=>{ atualizarTudo(); scheduleSave(); });
+      });
+    }
+
+    function totalPericia(nome){
+      const p = PERICIAS.find(x => x.nome === nome);
+      if(!p) return 0;
+      const key = keyOf(nome);
+      const a = attrValor(p.base);
+      const t = Number(document.getElementById(`treino_${key}`).value || 0);
+      const b = Number(document.getElementById(`bonus_${key}`).value || 0);
+      return a + t + b;
+    }
+
+    function atualizarTabelaPericias(){
+      PERICIAS.forEach(p => {
+        const key = keyOf(p.nome);
+        document.getElementById(`attr_${key}`).textContent = attrValor(p.base);
+        document.getElementById(`total_${key}`).textContent = totalPericia(p.nome);
+      });
+    }
+
+    function recalcularDefesas(){
+      const des = numFrom("destreza");
+      const bDef = numFrom("bonusDefesa");
+      const bEsq = numFrom("bonusEsquiva");
+
+      const reflexo = totalPericia("Reflexo");
+      const fortitude = totalPericia("Fortitude");
+
+      document.getElementById("defesaFinal").value = 10 + des + bDef;
+      document.getElementById("bloqueioFinal").value = fortitude;
+      document.getElementById("esquivaFinal").value = 10 + des + reflexo + bEsq;
+    }
+
+    function atualizarTudo(){
+      atualizarTabelaPericias();
+      recalcularDefesas();
+    }
+
+    function getPericiasState(){
+      const st = {};
+      PERICIAS.forEach(p=>{
+        const key = keyOf(p.nome);
+        const t = document.getElementById(`treino_${key}`);
+        const b = document.getElementById(`bonus_${key}`);
+        st[key] = {
+          treino: Number(t?.value || 0),
+          bonus: Number(b?.value || 0)
+        };
+      });
+      return st;
+    }
+
+    function setPericiasState(st){
+      PERICIAS.forEach(p=>{
+        const key = keyOf(p.nome);
+        const t = document.getElementById(`treino_${key}`);
+        const b = document.getElementById(`bonus_${key}`);
+        if(t && st[key]) t.value = String(st[key].treino ?? 0);
+        if(b && st[key]) b.value = String(st[key].bonus ?? 0);
+      });
+    }
+
+    montarTabelaPericias();
+
+    ["destreza","essencia","forca","intelecto","vigor","bonusDefesa","bonusEsquiva"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.addEventListener("input", ()=>{ atualizarTudo(); scheduleSave(); });
+    });
+
+    atualizarTudo();
+
+    // ======================= COLUNA 3 (Cards) =======================
+    function removerCard(btn){
+      const card = btn.closest(".card");
+      if(card) card.remove();
+      scheduleSave();
+    }
+
+    function gastarEM(qtd){
+      const n = Number(qtd);
+      if(!Number.isFinite(n) || n <= 0) return;
+      estado.esforco = Math.max(0, Number(estado.esforco ?? 0) - n);
+      renderBarra("esforco");
+      scheduleSave();
+    }
+
+    // helper: mini imagem em cards (agora com callback pra salvar)
+    function wireMiniImage(card, opts){
+      const img = card.querySelector(opts.img);
+      const input = card.querySelector(opts.input);
+      const btnRemove = card.querySelector(opts.remove);
+      const btnPick = card.querySelector(opts.pick);
+      const placeholder = opts.placeholder || "";
+
+      function setSrc(src){
+        img.src = src || placeholder;
+      }
+      setSrc("");
+
+      btnPick.addEventListener("click", ()=> input.click());
+
+      input.addEventListener("change", ()=>{
+        const file = input.files && input.files[0];
+        if(!file) return;
+        if(!file.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          setSrc(String(reader.result || ""));
+          input.value = "";
+          scheduleSave();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnRemove.addEventListener("click", ()=>{
+        setSrc("");
+        input.value = "";
+        scheduleSave();
+      });
+
+      return {
+        setSrc,
+        getSrc: ()=> img.src || ""
+      };
+    }
+
+    const IMG_PLACEHOLDER_ITEM =
+      "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88">
+          <rect width="100%" height="100%" rx="14" fill="rgba(255,255,255,0.06)"/>
+          <path d="M18 58l14-16 10 10 10-12 18 18" stroke="rgba(255,255,255,0.35)" stroke-width="3" fill="none"/>
+          <circle cx="34" cy="32" r="6" fill="rgba(255,255,255,0.28)"/>
+        </svg>`
+      );
+
+    const IMG_PLACEHOLDER_RITUAL =
+      "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88">
+          <rect width="100%" height="100%" rx="14" fill="rgba(255,255,255,0.06)"/>
+          <path d="M44 18l6 12 14 2-10 9 3 14-13-7-13 7 3-14-10-9 14-2z"
+            fill="rgba(255,255,255,0.16)"/>
+        </svg>`
+      );
+
+    function addHabilidade(data){
+      const lista = document.getElementById("habilidadesLista");
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="topo">
+          <span class="badge">Habilidade</span>
+          <div></div>
+          <button type="button" class="useBtn">Usar</button>
+          <button type="button" class="remBtn">Remover</button>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Nome</label>
+            <input class="habNome" type="text" placeholder="Nome da habilidade">
+          </div>
+          <div>
+            <label>Gasto de EM</label>
+            <input class="habEM" type="number" min="0" value="0">
+          </div>
+        </div>
+
+        <div>
+          <label>Função</label>
+          <textarea class="habFunc" rows="3" placeholder="O que faz / regras / efeitos"></textarea>
+        </div>
+      `;
+      card.querySelector(".remBtn").addEventListener("click", (e)=>removerCard(e.target));
+      card.querySelector(".useBtn").addEventListener("click", ()=>{
+        const custo = Number(card.querySelector(".habEM").value || 0);
+        gastarEM(custo);
+      });
+
+      // autosave nos campos
+      ["input","change"].forEach(ev=>{
+        card.querySelector(".habNome").addEventListener(ev, scheduleSave);
+        card.querySelector(".habEM").addEventListener(ev, scheduleSave);
+        card.querySelector(".habFunc").addEventListener(ev, scheduleSave);
+      });
+
+      if(data){
+        card.querySelector(".habNome").value = data.nome ?? "";
+        card.querySelector(".habEM").value = data.em ?? 0;
+        card.querySelector(".habFunc").value = data.func ?? "";
+      }
+
+      lista.appendChild(card);
+      scheduleSave();
+    }
+
+    const ITENS_TIPOS = ["Armas Simples","Armas Táticas","Roleplay","Cura","Armas Pesadas","Operacionais","Defesa"];
+    const DANOS = ["Corte","Perfuração","Fogo","Balístico","Elétrico","Impacto","Ruptura","Eco Existência","Carnal"];
+
+    function isTipoArma(tipo){
+      return tipo === "Armas Simples" || tipo === "Armas Táticas" || tipo === "Armas Pesadas";
+    }
+
+    function renderCamposExtrasItem(card, data){
+      const tipo = card.querySelector(".itemTipo").value;
+      const extras = card.querySelector(".extrasItem");
+      extras.innerHTML = "";
+
+      if(isTipoArma(tipo)){
+        const wrap = document.createElement("div");
+        wrap.className = "grid2";
+        wrap.innerHTML = `
+          <div>
+            <label>Tipo de dano</label>
+            <select class="itemDano">
+              ${DANOS.map(d => `<option value="${d}">${d}</option>`).join("")}
+            </select>
+          </div>
+          <div>
+            <label>Obs (opcional)</label>
+            <input class="itemObs" type="text" placeholder="ex: munição, alcance, etc.">
+          </div>
+        `;
+        extras.appendChild(wrap);
+
+        // autosave extras
+        wrap.querySelector(".itemDano").addEventListener("input", scheduleSave);
+        wrap.querySelector(".itemObs").addEventListener("input", scheduleSave);
+
+        if(data){
+          wrap.querySelector(".itemDano").value = data.dano ?? DANOS[0];
+          wrap.querySelector(".itemObs").value = data.obs ?? "";
+        }
+      }
+
+      if(tipo === "Cura"){
+        const wrap = document.createElement("div");
+        wrap.innerHTML = `
+          <label>Tipo de cura (editável)</label>
+          <input class="itemCuraTipo" type="text" placeholder="ex: Regenera 1d6, remove sangramento...">
+        `;
+        extras.appendChild(wrap);
+
+        wrap.querySelector(".itemCuraTipo").addEventListener("input", scheduleSave);
+
+        if(data) wrap.querySelector(".itemCuraTipo").value = data.curaTipo ?? "";
+      }
+    }
+
+    function addItem(data){
+      const lista = document.getElementById("itensLista");
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="topo">
+          <span class="badge">Item</span>
+          <div></div>
+          <span></span>
+          <button type="button" class="remBtn">Remover</button>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Nome</label>
+            <input class="itemNome" type="text" placeholder="Nome do item">
+          </div>
+          <div>
+            <label>Tipo</label>
+            <select class="itemTipo">
+              ${ITENS_TIPOS.map(t => `<option value="${t}">${t}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+
+        <div class="imgMiniWrap">
+          <div class="imgMiniBox">
+            <img class="itemImgPreview" alt="Imagem do item">
+          </div>
+          <div class="imgMiniBtns">
+            <button type="button" class="miniLinkBtn itemImgPick">Imagem</button>
+            <input class="imgMiniInput itemImgInput" type="file" accept="image/*">
+            <button type="button" class="miniLinkBtn rem itemImgRemove">Remover</button>
+          </div>
+        </div>
+
+        <div class="extrasItem"></div>
+
+        <div>
+          <label>Descrição / Função</label>
+          <textarea class="itemDesc" rows="3" placeholder="Efeitos / regras / notas"></textarea>
+        </div>
+      `;
+      card.querySelector(".remBtn").addEventListener("click", (e)=>removerCard(e.target));
+
+      // autosave base
+      card.querySelector(".itemNome").addEventListener("input", scheduleSave);
+      card.querySelector(".itemTipo").addEventListener("input", ()=>{ renderCamposExtrasItem(card); scheduleSave(); });
+      card.querySelector(".itemDesc").addEventListener("input", scheduleSave);
+
+      // liga mini imagem
+      const mini = wireMiniImage(card, {
+        img: ".itemImgPreview",
+        input: ".itemImgInput",
+        remove: ".itemImgRemove",
+        pick: ".itemImgPick",
+        placeholder: IMG_PLACEHOLDER_ITEM
+      });
+
+      if(data){
+        card.querySelector(".itemNome").value = data.nome ?? "";
+        card.querySelector(".itemTipo").value = data.tipo ?? ITENS_TIPOS[0];
+        card.querySelector(".itemDesc").value = data.desc ?? "";
+        renderCamposExtrasItem(card, data);
+
+        // aplica imagem salva
+        if(typeof data.img === "string" && data.img && !data.img.includes("data:image/svg+xml")){
+          mini.setSrc(data.img);
+        }
+      }else{
+        renderCamposExtrasItem(card);
+      }
+
+      lista.appendChild(card);
+      scheduleSave();
+    }
+
+    function addRitual(data){
+      const lista = document.getElementById("rituaisLista");
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="topo">
+          <span class="badge">Ritual</span>
+          <div></div>
+          <button type="button" class="useBtn">Usar</button>
+          <button type="button" class="remBtn">Remover</button>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Nome</label>
+            <input class="ritNome" type="text" placeholder="Nome do ritual">
+          </div>
+          <div>
+            <label>Elo</label>
+            <input class="ritElo" type="text" placeholder="Elo (ex: Ruptura, Carnal...)">
+          </div>
+        </div>
+
+        <div class="imgMiniWrap">
+          <div class="imgMiniBox">
+            <img class="ritImgPreview" alt="Imagem do ritual">
+          </div>
+          <div class="imgMiniBtns">
+            <button type="button" class="miniLinkBtn ritImgPick">Imagem</button>
+            <input class="imgMiniInput ritImgInput" type="file" accept="image/*">
+            <button type="button" class="miniLinkBtn rem ritImgRemove">Remover</button>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Elemento</label>
+            <select class="ritElemento ritElem">
+              <option value="">(Selecione)</option>
+              <option value="Carnal">Carnal</option>
+              <option value="Eco">Eco</option>
+              <option value="Ruptura">Ruptura</option>
+              <option value="Existência">Existência</option>
+            </select>
+          </div>
+          <div>
+            <label>Custo</label>
+            <input class="ritCusto" type="text" placeholder="ex: 2 EM / 1 Lux / etc.">
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Execução</label>
+            <input class="ritExec" type="text" placeholder="ex: Ação completa / Reação / etc.">
+          </div>
+          <div>
+            <label>Alcance</label>
+            <input class="ritAlcance" type="text" placeholder="ex: Curto / Médio / Longo / Toque">
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Alvo</label>
+            <input class="ritAlvo" type="text" placeholder="ex: 1 criatura, área, objeto...">
+          </div>
+          <div>
+            <label>Duração</label>
+            <input class="ritDur" type="text" placeholder="ex: Instantânea / 1 min / Sustentada">
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Área</label>
+            <input class="ritArea" type="text" placeholder="ex: cone 3m / raio 6m / linha 10m">
+          </div>
+          <div>
+            <label>Resistência</label>
+            <input class="ritRes" type="text" placeholder="ex: Vontade / Fortitude / Reflexo / Nenhuma">
+          </div>
+        </div>
+
+        <div>
+          <label>Descrição</label>
+          <textarea class="ritDesc" rows="4" placeholder="Efeito completo do ritual..."></textarea>
+        </div>
+      `;
+
+      card.querySelector(".remBtn").addEventListener("click", (e)=>removerCard(e.target));
+      card.querySelector(".useBtn").addEventListener("click", ()=>{
+        const custoTxt = (card.querySelector(".ritCusto").value || "").toLowerCase();
+        const m = custoTxt.match(/(\d+)\s*em/);
+        const em = m ? Number(m[1]) : 0;
+        gastarEM(em);
+      });
+
+      // autosave nos campos
+      const autos = [".ritNome",".ritElo",".ritElemento",".ritCusto",".ritExec",".ritAlcance",".ritAlvo",".ritDur",".ritArea",".ritRes",".ritDesc"];
+      autos.forEach(sel=>{
+        const el = card.querySelector(sel);
+        if(!el) return;
+        el.addEventListener("input", scheduleSave);
+        el.addEventListener("change", scheduleSave);
+      });
+
+      // liga mini imagem
+      const mini = wireMiniImage(card, {
+        img: ".ritImgPreview",
+        input: ".ritImgInput",
+        remove: ".ritImgRemove",
+        pick: ".ritImgPick",
+        placeholder: IMG_PLACEHOLDER_RITUAL
+      });
+
+      // cor do elemento
+      const sel = card.querySelector(".ritElemento");
+      function aplicarCorElemento(){
+        sel.classList.remove("rit-elem-carnal","rit-elem-eco","rit-elem-ruptura","rit-elem-existencia");
+        const v = sel.value;
+        if(v === "Carnal") sel.classList.add("rit-elem-carnal");
+        if(v === "Eco") sel.classList.add("rit-elem-eco");
+        if(v === "Ruptura") sel.classList.add("rit-elem-ruptura");
+        if(v === "Existência") sel.classList.add("rit-elem-existencia");
+      }
+      sel.addEventListener("input", ()=>{ aplicarCorElemento(); scheduleSave(); });
+      aplicarCorElemento();
+
+      if(data){
+        card.querySelector(".ritNome").value = data.nome ?? "";
+        card.querySelector(".ritElo").value = data.elo ?? "";
+        card.querySelector(".ritElemento").value = data.elemento ?? "";
+        card.querySelector(".ritCusto").value = data.custo ?? "";
+        card.querySelector(".ritExec").value = data.execucao ?? "";
+        card.querySelector(".ritAlcance").value = data.alcance ?? "";
+        card.querySelector(".ritAlvo").value = data.alvo ?? "";
+        card.querySelector(".ritDur").value = data.duracao ?? "";
+        card.querySelector(".ritArea").value = data.area ?? "";
+        card.querySelector(".ritRes").value = data.resistencia ?? "";
+        card.querySelector(".ritDesc").value = data.desc ?? "";
+        aplicarCorElemento();
+
+        if(typeof data.img === "string" && data.img && !data.img.includes("data:image/svg+xml")){
+          mini.setSrc(data.img);
+        }
+      }
+
+      lista.appendChild(card);
+      scheduleSave();
+    }
+
+    // ====== SERIALIZAÇÃO DOS CARDS (NOVO) ======
+    function getHabilidadesState(){
+      const arr = [];
+      document.querySelectorAll("#habilidadesLista .card").forEach(card=>{
+        arr.push({
+          nome: card.querySelector(".habNome")?.value ?? "",
+          em: Number(card.querySelector(".habEM")?.value ?? 0),
+          func: card.querySelector(".habFunc")?.value ?? ""
+        });
+      });
+      return arr;
+    }
+
+    function getItensState(){
+      const arr = [];
+      document.querySelectorAll("#itensLista .card").forEach(card=>{
+        const tipo = card.querySelector(".itemTipo")?.value ?? "";
+        const base = {
+          nome: card.querySelector(".itemNome")?.value ?? "",
+          tipo,
+          desc: card.querySelector(".itemDesc")?.value ?? "",
+          img: card.querySelector(".itemImgPreview")?.src ?? ""
+        };
+
+        if(isTipoArma(tipo)){
+          base.dano = card.querySelector(".itemDano")?.value ?? "";
+          base.obs  = card.querySelector(".itemObs")?.value ?? "";
+        }
+        if(tipo === "Cura"){
+          base.curaTipo = card.querySelector(".itemCuraTipo")?.value ?? "";
+        }
+
+        arr.push(base);
+      });
+      return arr;
+    }
+
+    function getRituaisState(){
+      const arr = [];
+      document.querySelectorAll("#rituaisLista .card").forEach(card=>{
+        arr.push({
+          nome: card.querySelector(".ritNome")?.value ?? "",
+          elo: card.querySelector(".ritElo")?.value ?? "",
+          elemento: card.querySelector(".ritElemento")?.value ?? "",
+          custo: card.querySelector(".ritCusto")?.value ?? "",
+          execucao: card.querySelector(".ritExec")?.value ?? "",
+          alcance: card.querySelector(".ritAlcance")?.value ?? "",
+          alvo: card.querySelector(".ritAlvo")?.value ?? "",
+          duracao: card.querySelector(".ritDur")?.value ?? "",
+          area: card.querySelector(".ritArea")?.value ?? "",
+          resistencia: card.querySelector(".ritRes")?.value ?? "",
+          desc: card.querySelector(".ritDesc")?.value ?? "",
+          img: card.querySelector(".ritImgPreview")?.src ?? ""
+        });
+      });
+      return arr;
+    }
+
+    // ================== BOOT: carregar e depois ligar autosave ==================
+    (function boot(){
+      const snap = loadState();
+
+      // 1) aplicar snap (precisa que tabela e selects já existam; já existem aqui)
+      applyState(snap);
+
+      // 2) atualizar cálculos e barras após aplicar
+      atualizarTudo();
+      renderBarra("vida");
+      renderBarra("sanidade");
+      renderBarra("esforco");
+
+      // 3) ligar autosave geral
+      listenAutoSave();
+
+      // 4) salvar uma vez (garante estrutura) — opcional
+      // saveState();
+    })();
+  </script>
+</body>
+</html>
